@@ -12,6 +12,8 @@ class window:
         self.root = root
         self.root.title("Task 1 NN")
         self.df = df
+        self.perceptron = None
+
         for i in range(5):
             self.root.grid_rowconfigure(i, weight=1)
         for i in range(3):
@@ -68,6 +70,9 @@ class window:
 
         self.train_button = tk.Button(self.root, text="Train", command=self.train, width=10)
         self.train_button.grid(row=4, column=1, padx=10, pady=10)
+
+        self.test_button = tk.Button(self.root, text="Test", command=self.test, width=10)
+        self.test_button.grid(row=4, column=2, padx=10, pady=10)
 
         #ٌRadio buttons
         self.radio_var = tk.StringVar()
@@ -128,14 +133,6 @@ class window:
         elif feature == "Fin length":
             return "fin_length"
 
-    # def selected_class(self, class_):
-    #     if class_ == "A":
-    #         return 1
-    #     elif class_ == "B":
-    #         return 2
-    #     elif class_ == "C":
-    #         return 3
-
     def dataframe_to_xy(self, df, f1, f2, class1, class2):
         x, y, x_train, y_train, x_test, y_test = data_loader.load_x_y(df, f1, f2, class1, class2)
         return x, y, x_train, y_train, x_test, y_test
@@ -150,23 +147,84 @@ class window:
         epochs = int(self.epochs_entry.get())
         mse_threshold = float(self.mse_entry.get())
 
-        perceptron = per.perceptron(2, lr, bias=self.bias_var.get())
+        self.perceptron = per.perceptron(2, lr, bias=self.bias_var.get())
         x, y, x_train, y_train, x_test, y_test = self.dataframe_to_xy(self.df, f1, f2, class1, class2)
-        perceptron.fit(x_train, y_train, epochs, mse_threshold)
-        w1, w2, b = perceptron.get_weights()
 
+        self.perceptron.fit(x_train, y_train, epochs, mse_threshold)
+
+        w1, w2, b = self.perceptron.get_weights()
         x1 = x_train[:,0]
-
-        x2 = -(w1/w2) * x1 - ((b)/w2)
-
-        print(f"x1: {x1}, x2:{x2}")
-
-
+        x2 = -(w1/w2) * x1 - (b/w2)
+        #print(f"x1: {x1}, x2:{x2}")
+        pred = self.perceptron.prediction(x_train, float(self.mse_entry.get()))
+        cm = self.confusion_matrix(y_train, pred)
+        print(f"Confusion Matrix: {cm['matrix']} \n Accuracy: {cm['accuracy']} Precision: {cm['precision']} recall: {cm['recall']} f1: {cm['f1']}")
         #plot the data
         plt.scatter(x_train[:,0], x_train[:,1], c=y_train)
         plt.plot(x1, x2, c='red')
         plt.plot()
         plt.show()
+
+    def test(self):
+        if self.perceptron == None:
+            messagebox.showerror("Error", "Please train the model first")
+            return
+        f1 = self.selected_feature(self.feature1.get())
+        f2 = self.selected_feature(self.feature2.get())
+        class1 = self.class1.get()
+        class2 = self.class2.get()
+
+        x, y, x_train, y_train, x_test, y_test = self.dataframe_to_xy(self.df, f1, f2, class1, class2)
+        w1, w2, b = self.perceptron.get_weights()
+
+        x1 = x_test[:,0]
+        x2 = -(w1/w2) * x1 - (b/w2)
+
+        pred = self.perceptron.prediction(x_test, float(self.mse_entry.get()))
+
+        cm = self.confusion_matrix(y_test, pred)
+
+        print(f"Confusion Matrix: {cm['matrix']} \n Accuracy: {cm['accuracy']} Precision: {cm['precision']} recall: {cm['recall']} f1: {cm['f1']}")
+
+        #plot the data
+        plt.scatter(x_test[:,0], x_test[:,1], c=y_test)
+        plt.plot(x1, x2, c='red')
+        plt.plot()
+        plt.show()
+
+    def confusion_matrix(self, y, pred):
+        actual = np.array(y)
+        predicted = np.array(pred)
+        
+        tp = np.sum((actual == 1) & (predicted == 1))
+        tn = np.sum((actual == 0) & (predicted == 0))
+        fp = np.sum((actual == 0) & (predicted == 1))
+        fn = np.sum((actual == 1) & (predicted == 0))
+
+        matrix = np.array([[tp, fp], [fn, tn]])
+
+        accuracy = (tp + tn) / (tp + tn + fp + fn)
+        precision = tp / (tp + fp) if (tp + fp) > 0 else 0
+        recall = tp / (tp + fn) if (tp + fn) > 0 else 0
+        f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
+
+        metrics = {
+            'matrix': matrix,
+            "accuracy": accuracy,
+            "precision": precision,
+            "recall": recall,
+            "f1": f1,
+            "true_positive": tp,
+            "true_negative": tn,
+            "false_positive": fp,
+            "false_negative": fn
+        }
+        return metrics
+
+
+
+
+
 
 
     def train_adaline(self):

@@ -1,7 +1,6 @@
 import numpy as np
 import GUI
 
-listt =[]
 class perceptron:
 
     def __init__(self,num_inputs, lr=0.01, bias=0):
@@ -21,10 +20,16 @@ class perceptron:
     
     def prediction(self, inputs, mse_threshold):
         z = self.calc_weighted_sum(inputs)
+        
+        try:
+            pred = []
+            for i in z:
+                pred.append(1 if self.act_fun(i, mse_threshold) == 1 else 0)
+        except:
+            pred = self.act_fun(z, mse_threshold)
+            return 1 if pred == 1 else 0
 
-        listt.append(z)
-
-        return 1 if self.act_fun(z, mse_threshold) == 1 else 0
+        return pred
     
     def loss_function(self, prediction, target):
         return target - prediction
@@ -36,7 +41,7 @@ class perceptron:
         self.w[1:] += self.lr * loss * inputs
         self.w[0] += self.lr * loss * self.wb
 
-        print(f"pred: {pred} loss: {loss}, w: {self.w}, wb: {self.wb}")
+        #print(f"pred: {pred} loss: {loss}, w: {self.w}, wb: {self.wb}")
 
 
 
@@ -47,8 +52,6 @@ class perceptron:
             for inputs,target in zip(x,y):
                 print(inputs,target)
                 self.train(inputs, target, mse_threshold)
-        listt.sort()
-        #print(listt)
 
     def get_weights(self):
         return self.w[1], self.w[2], self.wb * self.w[0]
