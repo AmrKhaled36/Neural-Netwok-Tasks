@@ -1,6 +1,6 @@
 import numpy as np
 
-class perceptron:
+class adaline:
 
     def __init__(self,num_inputs, lr=0.01, bias=0):
         self.w = np.random.rand(num_inputs + 1)
@@ -15,7 +15,7 @@ class perceptron:
         return z
     
     def act_fun(self, z):
-        return 1 if z > 0 else -1
+        return z
     
     def prediction(self, inputs):
         z = self.calc_weighted_sum(inputs)
@@ -23,19 +23,17 @@ class perceptron:
         try:
             pred = []
             for i in z:
-                pred.append(1 if self.act_fun(i) == 1 else 0)
+                pred.append(self.act_fun(i))
         except:
             pred = self.act_fun(z)
-            return 1 if pred == 1 else 0
+            return pred
 
         return pred
     
-    def loss_function(self, prediction, target):
-        return target - prediction
     
     def train(self, inputs, target):
         pred = self.prediction(inputs)
-        loss = self.loss_function(pred, target)
+        loss = target - pred
 
         self.w[1:] += self.lr * loss * inputs
         self.w[0] += self.lr * loss * self.wb
@@ -45,12 +43,17 @@ class perceptron:
 
 
     
-    def fit(self, x, y, epochs):
+    def fit(self, x, y, epochs, mse_threshold):
 
         for i in range(epochs):
+            MSE = 0
             for inputs,target in zip(x,y):
-                print(inputs,target)
                 self.train(inputs, target)
+                MSE += (target - self.prediction(inputs))**2
+            MSE = MSE/(2 * len(x))
+            print(f"Epoch {i} loss:{MSE}")
+            if MSE < mse_threshold:
+                break
 
     def get_weights(self):
         return self.w[1], self.w[2], self.wb * self.w[0]

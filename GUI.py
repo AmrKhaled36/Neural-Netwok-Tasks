@@ -3,6 +3,7 @@ from tkinter import filedialog, messagebox, simpledialog, ttk
 import matplotlib.pyplot as plt
 import numpy as np
 import perceptron as per
+import adaline as ada
 import pandas as pd
 import data_loader
 
@@ -13,7 +14,7 @@ class window:
         self.root.title("Task 1 NN")
         self.df = df
         self.perceptron = None
-
+        self.adaline = None
         for i in range(5):
             self.root.grid_rowconfigure(i, weight=1)
         for i in range(3):
@@ -121,6 +122,15 @@ class window:
         else:
             self.train_adaline()
 
+    def test(self):
+        if self.perceptron == None:
+            messagebox.showerror("Error", "Please train the model first")
+            return
+        if self.radio_var.get() == "perceptron":
+            self.test_perceptron()
+        else:
+            self.test_adaline()
+        
     def selected_feature(self, feature):
         if feature == "Gender":
             return "gender"
@@ -145,27 +155,58 @@ class window:
         class2 = self.class2.get()
         lr = float(self.learning_rate_entry.get())
         epochs = int(self.epochs_entry.get())
-        mse_threshold = float(self.mse_entry.get())
 
         self.perceptron = per.perceptron(2, lr, bias=self.bias_var.get())
         x, y, x_train, y_train, x_test, y_test = self.dataframe_to_xy(self.df, f1, f2, class1, class2)
 
-        self.perceptron.fit(x_train, y_train, epochs, mse_threshold)
+        self.perceptron.fit(x_train, y_train, epochs)
 
         w1, w2, b = self.perceptron.get_weights()
         x1 = x_train[:,0]
         x2 = -(w1/w2) * x1 - (b/w2)
         #print(f"x1: {x1}, x2:{x2}")
-        pred = self.perceptron.prediction(x_train, float(self.mse_entry.get()))
+        pred = self.perceptron.prediction(x_train)
         cm = self.confusion_matrix(y_train, pred)
         print(f"Confusion Matrix: {cm['matrix']} \n Accuracy: {cm['accuracy']} Precision: {cm['precision']} recall: {cm['recall']} f1: {cm['f1']}")
+        
         #plot the data
         plt.scatter(x_train[:,0], x_train[:,1], c=y_train)
         plt.plot(x1, x2, c='red')
         plt.plot()
         plt.show()
 
-    def test(self):
+    def train_adaline(self):
+        f1 = self.selected_feature(self.feature1.get())
+        f2 = self.selected_feature(self.feature2.get())
+        class1 = self.class1.get()
+        class2 = self.class2.get()
+        lr = float(self.learning_rate_entry.get())
+        epochs = int(self.epochs_entry.get())
+        mse_threshold = float(self.mse_entry.get())
+
+        self.adaline = ada.adaline(2, lr, bias=self.bias_var.get())
+        x, y, x_train, y_train, x_test, y_test = self.dataframe_to_xy(self.df, f1, f2, class1, class2)
+
+        self.adaline.fit(x_train, y_train, epochs, mse_threshold)
+
+        w1, w2, b = self.adaline.get_weights()
+        x1 = x_train[:,0]
+        x2 = -(w1/w2) * x1 - (b/w2)
+        print(-w1/w2, b/w2, -(w1/w2) * x1)
+        #print(f"x1: {x1}, x2:{x2}")
+        pred = self.adaline.prediction(x_train)
+        cm = self.confusion_matrix(y_train, pred)
+        print(f"Confusion Matrix: {cm['matrix']} \n Accuracy: {cm['accuracy']} Precision: {cm['precision']} recall: {cm['recall']} f1: {cm['f1']}")
+        
+        #plot the data
+        plt.scatter(x_train[:,0], x_train[:,1], c=y_train)
+        plt.plot(x1, x2, c='red')
+        plt.plot()
+        plt.show()
+
+
+
+    def test_perceptron(self):
         if self.perceptron == None:
             messagebox.showerror("Error", "Please train the model first")
             return
@@ -180,7 +221,34 @@ class window:
         x1 = x_test[:,0]
         x2 = -(w1/w2) * x1 - (b/w2)
 
-        pred = self.perceptron.prediction(x_test, float(self.mse_entry.get()))
+        pred = self.perceptron.prediction(x_test)
+
+        cm = self.confusion_matrix(y_test, pred)
+
+        print(f"Confusion Matrix: {cm['matrix']} \n Accuracy: {cm['accuracy']} Precision: {cm['precision']} recall: {cm['recall']} f1: {cm['f1']}")
+
+        #plot the data
+        plt.scatter(x_test[:,0], x_test[:,1], c=y_test)
+        plt.plot(x1, x2, c='red')
+        plt.plot()
+        plt.show()
+    
+    def test_adaline(self):
+        if self.adaline == None:
+            messagebox.showerror("Error", "Please train the model first")
+            return
+        f1 = self.selected_feature(self.feature1.get())
+        f2 = self.selected_feature(self.feature2.get())
+        class1 = self.class1.get()
+        class2 = self.class2.get()
+
+        x, y, x_train, y_train, x_test, y_test = self.dataframe_to_xy(self.df, f1, f2, class1, class2)
+        w1, w2, b = self.adaline.get_weights()
+
+        x1 = x_test[:,0]
+        x2 = -(w1/w2) * x1 - (b/w2)
+        print(-w1/w2, b/w2, -(w1/w2) * x1)
+        pred = self.adaline.prediction(x_test)
 
         cm = self.confusion_matrix(y_test, pred)
 
@@ -196,6 +264,9 @@ class window:
         actual = np.array(y)
         predicted = np.array(pred)
         
+        if self.radio_var.get() == "adaline":
+            predicted = (predicted >= 0.5).astype(int)
+
         tp = np.sum((actual == 1) & (predicted == 1))
         tn = np.sum((actual == 0) & (predicted == 0))
         fp = np.sum((actual == 0) & (predicted == 1))
@@ -220,12 +291,3 @@ class window:
             "false_negative": fn
         }
         return metrics
-
-
-
-
-
-
-
-    def train_adaline(self):
-        pass
