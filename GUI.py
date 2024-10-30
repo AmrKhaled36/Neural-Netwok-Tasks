@@ -3,13 +3,15 @@ from tkinter import filedialog, messagebox, simpledialog, ttk
 import matplotlib.pyplot as plt
 import numpy as np
 import perceptron as per
+import pandas as pd
+import data_loader
 
-class SignalApp:
+class window:
     
-    def __init__(self, root):
+    def __init__(self, root,df):
         self.root = root
         self.root.title("Task 1 NN")
-
+        self.df = df
         for i in range(5):
             self.root.grid_rowconfigure(i, weight=1)
         for i in range(3):
@@ -61,11 +63,11 @@ class SignalApp:
 
         ##fifth row
         self.bias_var = tk.BooleanVar()
-        self.bias_check = tk.Checkbutton(self.root, text="Bias", variable=self.bias_var, command=self.bias_check_clicked)
+        self.bias_check = tk.Checkbutton(self.root, text="Bias", variable=self.bias_var)
         self.bias_check.grid(row=4, column=0, padx=10, pady=10)
-        self.bias_entry = tk.Entry(self.root)
-        self.bias_entry.config(state="disabled")
-        self.bias_entry.grid(row=4, column=1, padx=10, pady=10)
+
+        self.train_button = tk.Button(self.root, text="Train", command=self.train, width=10)
+        self.train_button.grid(row=4, column=1, padx=10, pady=10)
 
         #ٌRadio buttons
         self.radio_var = tk.StringVar()
@@ -87,9 +89,77 @@ class SignalApp:
             self.class1.set("Select class 1")
             self.class2.set("Select class 2")
 
-    def bias_check_clicked(self):
-        if self.bias_var.get():
-            self.bias_entry.config(state="normal")
+    def train(self):
+        if self.feature1.get() == "Select feature 1":
+            messagebox.showerror("Error", "Please select feature 1")
+            return
+        if self.feature2.get() == "Select feature 2":
+            messagebox.showerror("Error", "Please select feature 2")
+            return
+        if self.class1.get() == "Select class 1":
+            messagebox.showerror("Error", "Please select class 1")
+            return
+        if self.class2.get() == "Select class 2":
+            messagebox.showerror("Error", "Please select class 2")
+            return
+        if self.learning_rate_entry.get() == "":
+            messagebox.showerror("Error", "Please enter learning rate")
+            return
+        if self.epochs_entry.get() == "":
+            messagebox.showerror("Error", "Please enter epochs")
+            return
+        if self.mse_entry.get() == "":
+            messagebox.showerror("Error", "Please enter MSE threshold")
+            return
+        if self.radio_var.get() == "perceptron":
+            self.train_perceptron()
         else:
-            self.bias_entry.config(state="disabled")
+            self.train_adaline()
 
+    def selected_feature(self, feature):
+        if feature == "Gender":
+            return "gender"
+        elif feature == "Body mass":
+            return "body_mass"
+        elif feature == "Beak length":
+            return "beak_length"
+        elif feature == "Beak depth":
+            return "beak_depth"
+        elif feature == "Fin length":
+            return "fin_length"
+
+    def selected_class(self, class_):
+        if class_ == "A":
+            return 1
+        elif class_ == "B":
+            return 2
+        elif class_ == "C":
+            return 3
+
+    def dataframe_to_xy(self, df, f1, f2, class1, class2):
+        x, y, x_train, y_train, x_test, y_test = data_loader.load_x_y(df, f1, f2, class1, class2)
+        return x, y, x_train, y_train, x_test, y_test
+
+
+    def train_perceptron(self):
+        f1 = self.selected_feature(self.feature1.get())
+        f2 = self.selected_feature(self.feature2.get())
+        class1 = self.selected_class(self.class1.get())
+        class2 = self.selected_class(self.class2.get())
+        lr = float(self.learning_rate_entry.get())
+        epochs = int(self.epochs_entry.get())
+        mse_threshold = float(self.mse_entry.get())
+
+        perceptron = per.perceptron(2, lr, bias=self.bias_var.get())
+        x, y, x_train, y_train, x_test, y_test = self.dataframe_to_xy(self.df, f1, f2, class1, class2)
+        perceptron.fit(x_train, y_train, epochs, mse_threshold)
+        w, wb = perceptron.get_weights()
+
+        #plot the data
+        plt.scatter(x_train[:,0], x_train[:,1], c=y_train)
+        plt.plot()
+        plt.show()
+
+
+    def train_adaline(self):
+        pass
