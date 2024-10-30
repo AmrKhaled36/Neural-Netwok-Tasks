@@ -123,9 +123,6 @@ class window:
             self.train_adaline()
 
     def test(self):
-        if self.perceptron == None:
-            messagebox.showerror("Error", "Please train the model first")
-            return
         if self.radio_var.get() == "perceptron":
             self.test_perceptron()
         else:
@@ -194,8 +191,9 @@ class window:
         x2 = -(w1/w2) * x1 - (b/w2)
         print(-w1/w2, b/w2, -(w1/w2) * x1)
         #print(f"x1: {x1}, x2:{x2}")
-        pred = self.adaline.prediction(x_train)
-        cm = self.confusion_matrix(y_train, pred)
+        pred = np.array(self.adaline.prediction(x_train))
+        pred_binary = (pred >= 0.5).astype(int)
+        cm = self.confusion_matrix(y_train, pred_binary)
         print(f"Confusion Matrix: {cm['matrix']} \n Accuracy: {cm['accuracy']} Precision: {cm['precision']} recall: {cm['recall']} f1: {cm['f1']}")
         
         #plot the data
@@ -264,8 +262,8 @@ class window:
         actual = np.array(y)
         predicted = np.array(pred)
         
-        if self.radio_var.get() == "adaline":
-            predicted = (predicted >= 0.5).astype(int)
+        # if self.radio_var.get() == "adaline":
+        #     predicted = (predicted >= 0.5).astype(int)
 
         tp = np.sum((actual == 1) & (predicted == 1))
         tn = np.sum((actual == 0) & (predicted == 0))
