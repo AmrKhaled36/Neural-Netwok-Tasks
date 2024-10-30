@@ -13,7 +13,6 @@ df['gender'] = df['gender'].fillna(df['gender'].mode()[0])
 
 #encode gender column to 1 and 0
 df['gender'] = df['gender'].map({'male': 1, 'female': 0})
-df['bird category'] = df['bird category'].map({'A': 1, 'B': 2, 'C': 3})
 print(df['gender'].value_counts())
 print(df['gender'].unique())
 

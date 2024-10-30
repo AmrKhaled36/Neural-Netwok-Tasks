@@ -1,14 +1,21 @@
 import pandas as pd
+from sklearn.preprocessing import MinMaxScaler
+
+def normalize_minmax(df, columns):
+    scaler = MinMaxScaler()
+    df[columns] = scaler.fit_transform(df[columns])
+    return df
 
 def load_x_y(df,f1,f2,c1,c2):
     dataframe = df.copy()
-    df = df[[f1,f2, "bird category"]]
+    dataframe = normalize_minmax(dataframe, [f1,f2])
+    dataframe = dataframe[[f1,f2, "bird category"]]
+    dataframe['bird category'] = dataframe['bird category'].map({c1: 0, c2: 1})
+    x = dataframe[[f1,f2]].values
+    y = dataframe["bird category"].values
 
-    x = df[[f1,f2]].values
-    y = df["bird category"].values
-
-    df_c1 = df[df["bird category"].isin([c1])]
-    df_c2 = df[df["bird category"].isin([c2])]
+    df_c1 = dataframe[dataframe["bird category"].isin([0])]
+    df_c2 = dataframe[dataframe["bird category"].isin([1])]
 
     train_df_c1 = df_c1.sample(n=30, random_state=40)
     train_df_c2 = df_c2.sample(n=30, random_state=41)

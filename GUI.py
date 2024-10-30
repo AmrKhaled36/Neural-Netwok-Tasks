@@ -128,13 +128,13 @@ class window:
         elif feature == "Fin length":
             return "fin_length"
 
-    def selected_class(self, class_):
-        if class_ == "A":
-            return 1
-        elif class_ == "B":
-            return 2
-        elif class_ == "C":
-            return 3
+    # def selected_class(self, class_):
+    #     if class_ == "A":
+    #         return 1
+    #     elif class_ == "B":
+    #         return 2
+    #     elif class_ == "C":
+    #         return 3
 
     def dataframe_to_xy(self, df, f1, f2, class1, class2):
         x, y, x_train, y_train, x_test, y_test = data_loader.load_x_y(df, f1, f2, class1, class2)
@@ -144,8 +144,8 @@ class window:
     def train_perceptron(self):
         f1 = self.selected_feature(self.feature1.get())
         f2 = self.selected_feature(self.feature2.get())
-        class1 = self.selected_class(self.class1.get())
-        class2 = self.selected_class(self.class2.get())
+        class1 = self.class1.get()
+        class2 = self.class2.get()
         lr = float(self.learning_rate_entry.get())
         epochs = int(self.epochs_entry.get())
         mse_threshold = float(self.mse_entry.get())
@@ -153,10 +153,18 @@ class window:
         perceptron = per.perceptron(2, lr, bias=self.bias_var.get())
         x, y, x_train, y_train, x_test, y_test = self.dataframe_to_xy(self.df, f1, f2, class1, class2)
         perceptron.fit(x_train, y_train, epochs, mse_threshold)
-        w, wb = perceptron.get_weights()
+        w1, w2, b = perceptron.get_weights()
+
+        x1 = x_train[:,0]
+
+        x2 = -(w1/w2) * x1 - ((b)/w2)
+
+        print(f"x1: {x1}, x2:{x2}")
+
 
         #plot the data
         plt.scatter(x_train[:,0], x_train[:,1], c=y_train)
+        plt.plot(x1, x2, c='red')
         plt.plot()
         plt.show()
 
