@@ -2,6 +2,8 @@ import GUI
 import tkinter as tk
 import pandas as pd
 
+#Loading the dataset and performing some general preprocessing
+
 df = pd.read_csv("birds.csv")
 
 print(df.describe())
@@ -18,6 +20,7 @@ print(df['gender'].unique())
 
 
 
+#Initializing the GUI
 
 root = tk.Tk()
 app = GUI.window(root,df)

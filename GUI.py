@@ -10,6 +10,16 @@ import data_loader
 class window:
     
     def __init__(self, root,df):
+        """
+        Initialize the window.
+
+        Parameters
+        ----------
+        root : tkinter.Tk
+            The root window.
+        df : pandas.DataFrame
+            The dataframe to use.
+        """
         self.root = root
         self.root.title("Task 1 NN")
         self.df = df
@@ -86,6 +96,15 @@ class window:
         self.radio_adal.grid(row=1, column=2, padx=10, pady=10)
 
     def selected_features_classes(self,event):
+        """
+        Handle the event when the same feature or class is selected.
+
+        Parameters
+        ----------
+        event : tkinter.Event
+            The event that triggered the function.
+
+        """
         if self.feature1.get() == self.feature2.get():
             messagebox.showerror("Error", "Please select different features")
             self.feature1.set("Select feature 1")
@@ -96,6 +115,9 @@ class window:
             self.class2.set("Select class 2")
 
     def train(self):
+        """
+        Function to call the train method and make sure all fields are filled.
+        """
         if self.feature1.get() == "Select feature 1":
             messagebox.showerror("Error", "Please select feature 1")
             return
@@ -123,12 +145,18 @@ class window:
             self.train_adaline()
 
     def test(self):
+        """
+        Function to call the test method.
+        """
         if self.radio_var.get() == "perceptron":
             self.test_perceptron()
         else:
             self.test_adaline()
         
     def selected_feature(self, feature):
+        """
+        Return the column name of the feature.
+        """
         if feature == "Gender":
             return "gender"
         elif feature == "Body mass":
@@ -141,11 +169,16 @@ class window:
             return "fin_length"
 
     def dataframe_to_xy(self, df, f1, f2, class1, class2):
+        """
+        Return the x, y, x_train, y_train, x_test, y_test.
+        """
         x, y, x_train, y_train, x_test, y_test = data_loader.load_x_y(df, f1, f2, class1, class2)
         return x, y, x_train, y_train, x_test, y_test
 
-
     def train_perceptron(self):
+        """
+        Train the perceptron and calculate the confusion matrix.
+        """
         f1 = self.selected_feature(self.feature1.get())
         f2 = self.selected_feature(self.feature2.get())
         class1 = self.class1.get()
@@ -161,7 +194,6 @@ class window:
         w1, w2, b = self.perceptron.get_weights()
         x1 = x_train[:,0]
         x2 = -(w1/w2) * x1 - (b/w2)
-        #print(f"x1: {x1}, x2:{x2}")
         pred = self.perceptron.prediction(x_train)
         cm = self.confusion_matrix(y_train, pred)
         print(f"Confusion Matrix: {cm['matrix']} \n Accuracy: {cm['accuracy']} Precision: {cm['precision']} recall: {cm['recall']} f1: {cm['f1']}")
@@ -173,6 +205,9 @@ class window:
         plt.show()
 
     def train_adaline(self):
+        """
+        Train the adaline and calculate the confusion matrix.
+        """
         f1 = self.selected_feature(self.feature1.get())
         f2 = self.selected_feature(self.feature2.get())
         class1 = self.class1.get()
@@ -188,9 +223,7 @@ class window:
 
         w1, w2, b = self.adaline.get_weights()
         x1 = x_train[:,0]
-        x2 = -(w1/w2) * x1 - ((b/w2) * 2) 
-        print(f"x1: {x1}, x2:{x2}")
-        print(f"w1: {w1}, w2: {w2}, b: {b}")  
+        x2 = (0.5 - w1 * x1 - b) * (1/w2)
         pred = np.array(self.adaline.prediction(x_train))
 
         cm = self.confusion_matrix(y_train, pred)
@@ -198,13 +231,14 @@ class window:
         
         #plot the data
         plt.scatter(x_train[:,0], x_train[:,1], c=y_train)
-        plt.plot(x1, x2, c=pred)
+        plt.plot(x1, x2, c="red")
         plt.plot()
         plt.show()
 
-
-
     def test_perceptron(self):
+        """
+        Test the perceptron and calculate the confusion matrix.
+        """
         if self.perceptron == None:
             messagebox.showerror("Error", "Please train the model first")
             return
@@ -232,6 +266,9 @@ class window:
         plt.show()
     
     def test_adaline(self):
+        """
+        Test the adaline and calculate the confusion matrix.
+        """
         if self.adaline == None:
             messagebox.showerror("Error", "Please train the model first")
             return
@@ -244,8 +281,7 @@ class window:
         w1, w2, b = self.adaline.get_weights()
 
         x1 = x_test[:,0]
-        x2 = -(w1/w2) * x1 - (b/w2)
-        print(-w1/w2, b/w2, -(w1/w2) * x1)
+        x2 = (0.5 - w1 * x1 - b) * (1/w2)
         pred = self.adaline.prediction(x_test)
 
         cm = self.confusion_matrix(y_test, pred)
@@ -259,6 +295,21 @@ class window:
         plt.show()
 
     def confusion_matrix(self, y, pred):
+        """
+        Calculate the confusion matrix.
+
+        Parameters
+        ----------
+        y : array-like
+            The actual values.
+        pred : array-like
+            The predicted values.
+
+        Returns
+        -------
+        dict
+            The confusion matrix.
+        """
         actual = np.array(y)
         predicted = np.array(pred)
         

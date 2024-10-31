@@ -2,11 +2,58 @@ import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 
 def normalize_minmax(df, columns):
+    """
+    Normalize the dataframe using MinMaxScaler.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The dataframe to normalize.
+    columns : list
+        The columns to normalize.
+
+    Returns
+    -------
+    pandas.DataFrame
+        The normalized dataframe.
+    """
     scaler = MinMaxScaler()
     df[columns] = scaler.fit_transform(df[columns])
     return df
 
 def load_x_y(df,f1,f2,c1,c2):
+    """
+    Load the dataframe into x and y.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The dataframe to load.
+    f1 : str
+        The first feature to load.
+    f2 : str
+        The second feature to load.
+    c1 : str
+        The first class to load.
+    c2 : str
+        The second class to load.
+
+    Returns
+    -------
+    x : numpy.ndarray
+        The x data.
+    y : numpy.ndarray
+        The y data.
+    x_train : numpy.ndarray
+        The x train data.
+    y_train : numpy.ndarray
+        The y train data.
+    x_test : numpy.ndarray
+        The x test data.
+    y_test : numpy.ndarray
+        The y test data.
+
+    """
     dataframe = df.copy()
     dataframe = normalize_minmax(dataframe, [f1,f2])
     dataframe = dataframe[[f1,f2, "bird category"]]
