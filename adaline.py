@@ -49,7 +49,10 @@ class adaline:
             MSE = 0
             for inputs,target in zip(x,y):
                 self.train(inputs, target)
+
+            for inputs,target in zip(x,y):
                 MSE += (target - self.prediction(inputs))**2
+            
             MSE = MSE/(2 * len(x))
             print(f"Epoch {i} loss:{MSE}")
             if MSE < mse_threshold:

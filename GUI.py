@@ -188,17 +188,17 @@ class window:
 
         w1, w2, b = self.adaline.get_weights()
         x1 = x_train[:,0]
-        x2 = -(w1/w2) * x1 - (b/w2)
-        print(-w1/w2, b/w2, -(w1/w2) * x1)
-        #print(f"x1: {x1}, x2:{x2}")
+        x2 = -(w1/w2) * x1 - ((b/w2) * 2) 
+        print(f"x1: {x1}, x2:{x2}")
+        print(f"w1: {w1}, w2: {w2}, b: {b}")  
         pred = np.array(self.adaline.prediction(x_train))
-        pred_binary = (pred >= 0.5).astype(int)
-        cm = self.confusion_matrix(y_train, pred_binary)
+
+        cm = self.confusion_matrix(y_train, pred)
         print(f"Confusion Matrix: {cm['matrix']} \n Accuracy: {cm['accuracy']} Precision: {cm['precision']} recall: {cm['recall']} f1: {cm['f1']}")
         
         #plot the data
         plt.scatter(x_train[:,0], x_train[:,1], c=y_train)
-        plt.plot(x1, x2, c='red')
+        plt.plot(x1, x2, c=pred)
         plt.plot()
         plt.show()
 
@@ -262,8 +262,8 @@ class window:
         actual = np.array(y)
         predicted = np.array(pred)
         
-        # if self.radio_var.get() == "adaline":
-        #     predicted = (predicted >= 0.5).astype(int)
+        if self.radio_var.get() == "adaline":
+            predicted = (predicted >= 0.5).astype(int)
 
         tp = np.sum((actual == 1) & (predicted == 1))
         tn = np.sum((actual == 0) & (predicted == 0))
