@@ -1,5 +1,6 @@
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
+import matplotlib.pyplot as plt
 
 def normalize_minmax(df, columns):
     """
@@ -81,3 +82,18 @@ def load_x_y(df,f1,f2,c1,c2):
     
     return x, y, x_train, y_train, x_test, y_test
 
+def display_data(df,f1,f2,c1,c2):
+    dataframe = df.copy()
+    dataframe = dataframe[[f1,f2, "bird category"]]
+    dataframe['bird category'] = dataframe['bird category'].map({c1: 0, c2: 1})
+    x = dataframe[[f1,f2]].values
+    y = dataframe["bird category"].values
+
+    plt.scatter(x[y == 0, 0], x[y == 0, 1], color='blue', label=c1)
+    plt.scatter(x[y == 1, 0], x[y == 1, 1], color='orange', label=c2)
+
+    plt.xlabel(f1)
+    plt.ylabel(f2)
+    plt.title(f'{f1} vs {f2} for {c1} and {c2}')
+    plt.legend(title="Classes")
+    plt.show()

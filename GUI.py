@@ -27,7 +27,7 @@ class window:
         self.adaline = None
         for i in range(5):
             self.root.grid_rowconfigure(i, weight=1)
-        for i in range(3):
+        for i in range(4):
             self.root.grid_columnconfigure(i, weight=1)
 
         self.features = ["Gender", "Body mass", "Beak length", "Beak depth","Fin length"]
@@ -42,6 +42,10 @@ class window:
         self.feature2.grid(row=0, column=1, padx=10, pady=10)
         self.feature2.set("Select feature 2")
         self.feature2.bind("<<ComboboxSelected>>", self.selected_features_classes)
+
+        self.plot_button = tk.Button(self.root, text="Plot", command=self.plot, width=10)
+        self.plot_button.grid(row=0, column=3, padx=10, pady=10)
+
 
         ##Second row of combo boxes.
         self.class1 = ttk.Combobox(self.root, values=self.classes, state="readonly")
@@ -199,9 +203,14 @@ class window:
         print(f"Confusion Matrix: {cm['matrix']} \n Accuracy: {cm['accuracy']} Precision: {cm['precision']} recall: {cm['recall']} f1: {cm['f1']}")
         
         #plot the data
-        plt.scatter(x_train[:,0], x_train[:,1], c=y_train)
-        plt.plot(x1, x2, c='red')
-        plt.plot()
+        plt.scatter(x_train[y_train == 0, 0], x_train[y_train == 0, 1], color='blue', label=class1)
+        plt.scatter(x_train[y_train == 1, 0], x_train[y_train == 1, 1], color='orange', label=class2)
+
+        plt.xlabel(f1)
+        plt.ylabel(f2)
+        plt.title(f'{f1} vs {f2} for {class1} and {class2}')
+        plt.legend(title="Classes")
+        plt.plot(x1, x2, c='red')        
         plt.show()
 
     def train_adaline(self):
@@ -230,9 +239,14 @@ class window:
         print(f"Confusion Matrix: {cm['matrix']} \n Accuracy: {cm['accuracy']} Precision: {cm['precision']} recall: {cm['recall']} f1: {cm['f1']}")
         
         #plot the data
-        plt.scatter(x_train[:,0], x_train[:,1], c=y_train)
-        plt.plot(x1, x2, c="red")
-        plt.plot()
+        plt.scatter(x_train[y_train == 0, 0], x_train[y_train == 0, 1], color='blue', label=class1)
+        plt.scatter(x_train[y_train == 1, 0], x_train[y_train == 1, 1], color='orange', label=class2)
+
+        plt.xlabel(f1)
+        plt.ylabel(f2)
+        plt.title(f'{f1} vs {f2} for {class1} and {class2}')
+        plt.legend(title="Classes")
+        plt.plot(x1, x2, c='red')        
         plt.show()
 
     def test_perceptron(self):
@@ -260,9 +274,14 @@ class window:
         print(f"Confusion Matrix: {cm['matrix']} \n Accuracy: {cm['accuracy']} Precision: {cm['precision']} recall: {cm['recall']} f1: {cm['f1']}")
 
         #plot the data
-        plt.scatter(x_test[:,0], x_test[:,1], c=y_test)
-        plt.plot(x1, x2, c='red')
-        plt.plot()
+        plt.scatter(x_test[y_test == 0, 0], x_test[y_test == 0, 1], color='blue', label=class1)
+        plt.scatter(x_test[y_test == 1, 0], x_test[y_test == 1, 1], color='orange', label=class2)
+
+        plt.xlabel(f1)
+        plt.ylabel(f2)
+        plt.title(f'{f1} vs {f2} for {class1} and {class2}')
+        plt.legend(title="Classes")
+        plt.plot(x1, x2, c='red')        
         plt.show()
     
     def test_adaline(self):
@@ -289,9 +308,14 @@ class window:
         print(f"Confusion Matrix: {cm['matrix']} \n Accuracy: {cm['accuracy']} Precision: {cm['precision']} recall: {cm['recall']} f1: {cm['f1']}")
 
         #plot the data
-        plt.scatter(x_test[:,0], x_test[:,1], c=y_test)
-        plt.plot(x1, x2, c='red')
-        plt.plot()
+        plt.scatter(x_test[y_test == 0, 0], x_test[y_test == 0, 1], color='blue', label=class1)
+        plt.scatter(x_test[y_test == 1, 0], x_test[y_test == 1, 1], color='orange', label=class2)
+
+        plt.xlabel(f1)
+        plt.ylabel(f2)
+        plt.title(f'{f1} vs {f2} for {class1} and {class2}')
+        plt.legend(title="Classes")
+        plt.plot(x1, x2, c='red')        
         plt.show()
 
     def confusion_matrix(self, y, pred):
@@ -340,3 +364,14 @@ class window:
             "false_negative": fn
         }
         return metrics
+
+    def plot(self):
+        """
+        Plot the data.
+        """
+        f1 = self.selected_feature(self.feature1.get())
+        f2 = self.selected_feature(self.feature2.get())
+        class1 = self.class1.get()
+        class2 = self.class2.get()
+
+        data_loader.display_data(self.df, f1, f2, class1, class2)
