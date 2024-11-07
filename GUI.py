@@ -25,7 +25,7 @@ class window:
         self.df = df
         self.perceptron = None
         self.adaline = None
-        for i in range(5):
+        for i in range(6):
             self.root.grid_rowconfigure(i, weight=1)
         for i in range(4):
             self.root.grid_columnconfigure(i, weight=1)
@@ -88,6 +88,16 @@ class window:
 
         self.test_button = tk.Button(self.root, text="Test", command=self.test, width=10)
         self.test_button.grid(row=4, column=2, padx=10, pady=10)
+
+        ##sixth row
+        self.x1_entry = tk.Entry(self.root)
+        self.x1_entry.grid(row=5, column=0, padx=10, pady=10)
+
+        self.x2_entry = tk.Entry(self.root)
+        self.x2_entry.grid(row=5, column=1, padx=10, pady=10)
+
+        self.predict_button = tk.Button(self.root, text="Predict", command=self.predict, width=10)
+        self.predict_button.grid(row=5, column=2, padx=10, pady=10)
 
         #ٌRadio buttons
         self.radio_var = tk.StringVar()
@@ -375,3 +385,33 @@ class window:
         class2 = self.class2.get()
 
         data_loader.display_data(self.df, f1, f2, class1, class2)
+    
+    def predict(self):
+        """
+        Predict the class of a new data point.
+        """
+        x1 = float(self.x1_entry.get())
+        x2 = float(self.x2_entry.get())
+        x1, x2 = data_loader.normalize_minmax(self.df, [x1, x2])
+
+        if self.radio_var.get() == "perceptron":
+            if self.perceptron == None:
+                messagebox.showerror("Error", "Please train the model first")
+                return
+            prediction = self.perceptron.prediction([x1, x2])
+            if prediction == 0:
+                messagebox.showinfo("Prediction", "Class 1")
+            else:
+                messagebox.showinfo("Prediction", "Class 2")
+
+        elif self.radio_var.get() == "adaline":
+            if self.adaline == None:
+                messagebox.showerror("Error", "Please train the model first")
+                return
+            prediction = self.adaline.prediction([x1, x2])
+            if prediction < 0.5:
+                messagebox.showinfo("Prediction", "Class 1")
+            else:
+                messagebox.showinfo("Prediction", "Class 2")
+
+        return  

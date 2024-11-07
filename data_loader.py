@@ -1,7 +1,9 @@
 import pandas as pd
+import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 import matplotlib.pyplot as plt
 
+scaler = MinMaxScaler()
 def normalize_minmax(df, columns):
     """
     Normalize the dataframe using MinMaxScaler.
@@ -18,8 +20,15 @@ def normalize_minmax(df, columns):
     pandas.DataFrame
         The normalized dataframe.
     """
-    scaler = MinMaxScaler()
-    df[columns] = scaler.fit_transform(df[columns])
+
+    if isinstance(columns[0], str):
+        df[columns] = scaler.fit_transform(df[columns])
+    else:
+        arr = np.array(columns).reshape(-1,2)
+        arr = scaler.transform(arr)
+        x1 = arr[0,0]
+        x2 = arr[0,1]
+        return x1, x2
     return df
 
 def load_x_y(df,f1,f2,c1,c2):
@@ -66,7 +75,7 @@ def load_x_y(df,f1,f2,c1,c2):
     df_c2 = dataframe[dataframe["bird category"].isin([1])]
 
     train_df_c1 = df_c1.sample(n=30, random_state=40)
-    train_df_c2 = df_c2.sample(n=30, random_state=41)
+    train_df_c2 = df_c2.sample(n=30, random_state=40)
 
     test_df_c1 = df_c1.drop(train_df_c1.index)
     test_df_c2 = df_c2.drop(train_df_c2.index)
