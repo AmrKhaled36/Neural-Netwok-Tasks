@@ -24,14 +24,17 @@ def normalize_minmax(df, columns):
     if isinstance(columns[0], str):
         df[columns] = scaler.fit_transform(df[columns])
     else:
-        arr = np.array(columns).reshape(-1,2)
+        arr = np.array(columns).reshape(-1,5)
         arr = scaler.transform(arr)
         x1 = arr[0,0]
         x2 = arr[0,1]
-        return x1, x2
+        x3 = arr[0,2]
+        x4 = arr[0,3]
+        x5 = arr[0,4]
+        return x1, x2, x3, x4, x5
     return df
 
-def load_x_y(df,f1,f2,c1,c2):
+def load_x_y(df):
     """
     Load the dataframe into x and y.
 
@@ -62,47 +65,33 @@ def load_x_y(df,f1,f2,c1,c2):
         The x test data.
     y_test : numpy.ndarray
         The y test data.
-
     """
+
     dataframe = df.copy()
-    dataframe = normalize_minmax(dataframe, [f1,f2])
-    dataframe = dataframe[[f1,f2, "bird category"]]
-    dataframe['bird category'] = dataframe['bird category'].map({c1: 0, c2: 1})
-    x = dataframe[[f1,f2]].values
+    dataframe = normalize_minmax(dataframe, dataframe.columns[0:-1])
+    dataframe['bird category'] = dataframe['bird category'].map({"A": 0, "B": 1, "C":2})
+    x = dataframe.drop("bird category", axis=1).values
     y = dataframe["bird category"].values
 
     df_c1 = dataframe[dataframe["bird category"].isin([0])]
     df_c2 = dataframe[dataframe["bird category"].isin([1])]
+    df_c3 = dataframe[dataframe["bird category"].isin([2])]
 
-    train_df_c1 = df_c1.sample(n=30, random_state=40)
-    train_df_c2 = df_c2.sample(n=30, random_state=40)
+    train_df_c1 = df_c1.sample(n=30)
+    train_df_c2 = df_c2.sample(n=30)
+    train_df_c3 = df_c3.sample(n=30)
 
     test_df_c1 = df_c1.drop(train_df_c1.index)
     test_df_c2 = df_c2.drop(train_df_c2.index)
+    test_df_c3 = df_c3.drop(train_df_c3.index)
 
-    train_df = pd.concat([train_df_c1, train_df_c2])
-    test_df = pd.concat([test_df_c1, test_df_c2])
+    train_df = pd.concat([train_df_c1, train_df_c2, train_df_c3])
+    test_df = pd.concat([test_df_c1, test_df_c2, test_df_c3])
 
-    x_train =  train_df[[f1,f2]].values
+    x_train =  train_df.drop("bird category", axis=1).values
     y_train = train_df["bird category"].values
 
-    x_test = test_df[[f1,f2]].values
+    x_test = test_df.drop("bird category", axis=1).values
     y_test = test_df["bird category"].values
     
     return x, y, x_train, y_train, x_test, y_test
-
-def display_data(df,f1,f2,c1,c2):
-    dataframe = df.copy()
-    dataframe = dataframe[[f1,f2, "bird category"]]
-    dataframe['bird category'] = dataframe['bird category'].map({c1: 0, c2: 1})
-    x = dataframe[[f1,f2]].values
-    y = dataframe["bird category"].values
-
-    plt.scatter(x[y == 0, 0], x[y == 0, 1], color='blue', label=c1)
-    plt.scatter(x[y == 1, 0], x[y == 1, 1], color='orange', label=c2)
-
-    plt.xlabel(f1)
-    plt.ylabel(f2)
-    plt.title(f'{f1} vs {f2} for {c1} and {c2}')
-    plt.legend(title="Classes")
-    plt.show()

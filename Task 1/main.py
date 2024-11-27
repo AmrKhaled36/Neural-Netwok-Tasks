@@ -4,7 +4,7 @@ import pandas as pd
 
 #Loading the dataset and performing some general preprocessing
 
-df = pd.read_csv("birds.csv")
+df = pd.read_csv("Task 1/birds.csv")
 
 print(df.describe())
 
